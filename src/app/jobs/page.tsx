@@ -1,10 +1,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { JobCard } from "@/features/jobs/components/JobCard";
-import { getJobs } from "@/features/jobs/services/getJobs";
+import  JobsClient  from "@/features/jobs/components/JobsClient"
 
 export default async function JobsPage() {
-  try {
-    const jobs = await getJobs();
 
     return (
       <DashboardLayout>
@@ -13,19 +10,9 @@ export default async function JobsPage() {
             Jobs
           </h1>
 
-          <div className="grid gap-4">
-            {jobs.slice(0, 10).map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
+            <JobsClient />
         </div>
       </DashboardLayout>
     );
-  } catch {
-    return (
-      <DashboardLayout>
-        <p>Failed to load jobs.</p>
-      </DashboardLayout>
-    );
-  }
+  
 }
