@@ -3,7 +3,6 @@ import { useSavedJobs } from "@/store/useSavedJobs";
 import { Job } from "../types/job";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart } from "lucide-react";
-import { toast } from "sonner";
 import Link from "next/link";
 
 interface Props {
@@ -31,9 +30,20 @@ export function JobCard({ job }: Props) {
 
           <p className="text-sm">{job.candidate_required_location}</p>
 
-          <Link href={`/jobs/${job.id}`} className="text-blue-500 text-sm">
+        <div className="flex gap-3 pt-4">
+          <Link href={`/jobs/${job.id}`}             
+          className="px-4 py-2 rounded-md bg-black text-white text-sm font-medium hover:bg-black/80 transition"
+>
             View Details
           </Link>
+
+          <Link
+            href={`/resume?jobId=${job.id}`}
+            className="px-4 py-2 rounded-md border text-sm font-medium hover:bg-muted transition"
+          >
+            Analyze this job
+          </Link>
+          </div>
         </div>
         <button
           onClick={() => {

@@ -3,6 +3,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { JobDescription } from "@/features/jobs/components/JobDescription";
 import { useJobs } from "@/features/jobs/hooks/useJobs";
+import Link from "next/link";
 import { use } from "react";
 
 interface Props {
@@ -33,12 +34,11 @@ export default function JobDetailPage({
 
   return (
     <DashboardLayout>
-      <div className="space-y-4">
+      <div className="space-y-4 mb-8">
         <img
           src={job.company_logo || "/placeholder.png"}
           className="w-16 h-16 rounded-lg object-cover"
         />
-
         <h1 className="text-2xl font-bold">{job.title}</h1>
         <p className="text-muted-foreground">
           <strong>Company: </strong>
@@ -64,9 +64,22 @@ export default function JobDetailPage({
           <strong>Description: </strong>
           <JobDescription html={job.description} />
         </p>
-        <a href={job.url} target="_blank" className="text-blue-500">
-          Apply
-        </a>
+        <div className="flex gap-3 pt-4">
+          <a
+            href={job.url}
+            target="_blank"
+            className="px-4 py-2 rounded-md bg-black text-white text-sm font-medium hover:bg-black/80 transition"
+          >
+            Apply
+          </a>
+
+          <Link
+            href={`/resume?jobId=${job.id}`}
+            className="px-4 py-2 rounded-md border text-sm font-medium hover:bg-muted transition"
+          >
+            Analyze this job
+          </Link>
+        </div>{" "}
       </div>
     </DashboardLayout>
   );
