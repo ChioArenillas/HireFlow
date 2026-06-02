@@ -4,6 +4,7 @@ import { Job } from "../types/job";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface Props {
   job: Job;
@@ -30,9 +31,9 @@ export function JobCard({ job }: Props) {
 
           <p className="text-sm">{job.candidate_required_location}</p>
 
-          <a href={job.url} className="text-blue-500 text-sm" target="_blank">
-            View job
-          </a>
+          <Link href={`/jobs/${job.id}`} className="text-blue-500 text-sm">
+            View Details
+          </Link>
         </div>
         <button
           onClick={() => {

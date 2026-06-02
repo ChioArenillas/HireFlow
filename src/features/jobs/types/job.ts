@@ -8,4 +8,5 @@ export interface Job {
   salary: string;
   category: string;
   url: string;
+  description: string
 }
