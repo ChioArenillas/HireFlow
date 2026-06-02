@@ -1,5 +1,7 @@
 "use client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { CategoryPieChart } from "@/features/dashboard/components/CategoryPieChart";
+import { CompanyBarChart } from "@/features/dashboard/components/CompanyBarChart";
 import { SimpleBarChart } from "@/features/dashboard/components/SimpleBarChart";
 import StatsCard from "@/features/dashboard/components/StatsCard";
 import { useSavedJobs } from "@/store/useSavedJobs";
@@ -17,12 +19,28 @@ export default function HomePage() {
     return acc
   }, {} as Record<string, number>)
 
-  const chartData = Object.entries(categoryCount).map(
-    ([name, value]) => ({
+  const chartData = Object.entries(categoryCount)
+  .slice(0, 5)
+  .map(([name, value]) => ({
       name,
       value,
     })
   )
+
+  const companyCount = savedJobs.reduce((acc, job) => {
+    const company = job.company_name ?? "Unknown"
+    acc[company] = (acc[company] || 0) + 1
+
+    return acc
+  }, {} as Record<string, number>)
+
+  const companyData = Object.entries(companyCount)
+  .slice(0,5)
+  .map(([name, value]) => ({
+    name,
+    value
+  }))
+
   if (!savedJobs.length) {
     return (
       <DashboardLayout>
@@ -37,7 +55,7 @@ export default function HomePage() {
   }
   return (
     <DashboardLayout>
-      <div>
+      <div className="space-y-6">
         <h2 className="text-2xl font-bold">Dashboard</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -46,9 +64,9 @@ export default function HomePage() {
         <StatsCard title="Categories" value={categories} />
         <StatsCard title="Locations" value={locations} />
       </div>
-      <div>
       <SimpleBarChart data={chartData}/>
-      </div>
+      <CategoryPieChart data={chartData}/>
+      <CompanyBarChart data={companyData}/>
     </DashboardLayout>
   );
 }

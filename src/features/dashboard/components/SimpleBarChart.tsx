@@ -6,7 +6,7 @@ export function SimpleBarChart({ data }: Props) {
   const max = Math.max(...data.map((d) => d.value));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6 mt-10 mb-10">
       {data.map((item) => (
         <div key={item.name}>
           <div className="flex justify-between text-sm mb-1">
@@ -18,7 +18,7 @@ export function SimpleBarChart({ data }: Props) {
             <div
               className="h-2 bg-black rounded"
               style={{
-                width: `${(item.value / max) * 100}%`,
+                width: `${(item.value / max) * 50}%`,
               }}
             />
           </div>
