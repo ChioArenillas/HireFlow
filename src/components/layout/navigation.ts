@@ -4,18 +4,24 @@ import {
   Briefcase,
   FileText,
   MessageSquare,
+  Bookmark,
 } from "lucide-react";
 
 export const navigation = [
   {
     label: "Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
   },
   {
     label: "Jobs",
     href: "/jobs",
     icon: Briefcase,
+  },
+  {
+    label: "Saved Jobs",
+    href: "/saved-jobs",
+    icon: Bookmark,
   },
   {
     label: "Resume Analyzer",

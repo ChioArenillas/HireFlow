@@ -15,9 +15,18 @@ export const useSavedJobs = create<SavedJobsStore>()(
             savedJobs: [],
 
             addJob: (job) =>
-                set((state) => ({
-                    savedJobs: [...state.savedJobs, job]
-                })),
+                set((state) => {
+                    const alreadySaved = state.savedJobs.some(
+                        (savedJobs) => savedJobs.id === job.id
+                    )
+                    if(alreadySaved){
+                        return state
+                    }
+                    return{
+                        savedJobs: [...state.savedJobs, job]
+                    }
+                    
+                }),
             
             removeJob: (id) =>
                 set((state) => ({

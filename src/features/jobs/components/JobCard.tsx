@@ -2,16 +2,21 @@
 import { useSavedJobs } from "@/store/useSavedJobs";
 import { Job } from "../types/job";
 import { Card, CardContent } from "@/components/ui/card";
+import { Heart } from "lucide-react";
+import { toast } from "sonner";
 
 interface Props {
   job: Job;
 }
 
 export function JobCard({ job }: Props) {
-  const { addJob, removeJob, isSaved } = useSavedJobs();
-  const saved = isSaved(job.id);
+  const addJob = useSavedJobs((state) => state.addJob);
+  const removeJob = useSavedJobs((state) => state.removeJob);
+  const savedJobs = useSavedJobs((state) => state.savedJobs);
+
+  const saved = savedJobs.some((j) => j.id === job.id);
   return (
-    <Card>
+    <Card className="relative">
       <CardContent className="flex gap-6 items-center p-4">
         <img
           src={job.company_logo || "/placeholder.png"}
@@ -30,10 +35,20 @@ export function JobCard({ job }: Props) {
           </a>
         </div>
         <button
-          onClick={() => (saved ? removeJob(job.id) : addJob(job))}
-          className="mt-3 text-sm border px-3 py-1 rounded"
+          onClick={() => {
+            if (saved) {
+              removeJob(job.id);
+            } else {
+              addJob(job);
+            }
+          }}
+          className="absolute top-3 right-3 p-2 rounded-full transition hover:bg-muted cursor-pointer hover:scale-110"
         >
-          {saved ? "Remove saved" : "Save job"}
+          <Heart
+            className={`w-5 h-5 transition ${
+              saved ? "fill-black text-black" : "text-muted-foreground"
+            }`}
+          />
         </button>
       </CardContent>
     </Card>
