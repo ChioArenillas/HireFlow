@@ -9,6 +9,7 @@ interface SavedJobsStore {
     isSaved: (id: number) => boolean
 }
 
+
 export const useSavedJobs = create<SavedJobsStore>()(
     persist(
         (set, get) => ({
