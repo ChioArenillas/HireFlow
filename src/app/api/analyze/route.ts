@@ -1,54 +1,76 @@
+export const runtime = "nodejs"
+
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
+import mammoth from "mammoth"
+import pdf from "pdf-parse"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-
 export async function POST(request: Request) {
-  const { cv, jobDescription } = await request.json()
-const prompt = `
-You are an expert recruiter.
+    try{
+  const formData = await request.formData()
 
-Return ONLY raw JSON. No markdown. No backticks. No explanation.
+  const file = formData.get("file") as File | null
+  const jobDescription = formData.get("jobDescription") as string
 
-Schema:
+  if (!file) {
+    return NextResponse.json({ error: "No file" }, { status: 400 })
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  let cv = ""
+
+  const fileName = file.name.toLowerCase()
+
+  if (fileName.endsWith(".pdf")) {
+    const data = await pdf(buffer)
+    cv = data.text
+
+  } else if (fileName.endsWith(".docx")) {
+    const data = await mammoth.extractRawText({ buffer })
+    cv = data.value
+  } else {
+    cv = await file.text()
+  }
+
+  const prompt = `
+Return ONLY valid JSON.
+
 {
-  "score": number (0-100),
+  "score": number,
   "missingSkills": string[],
   "feedback": string
 }
 
-Job Description: ${jobDescription}
+Job Description:
+${jobDescription}
 
-CV: ${cv}
+CV:
+${cv}
 `
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     response_format: { type: "json_object" },
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
+    messages: [{ role: "user", content: prompt }],
   })
-  const content = completion.choices[0].message.content ?? "{}"
 
-let result
+  const result = JSON.parse(completion.choices[0].message.content ?? "{}")
 
-try {
-  result = JSON.parse(content)
-} catch (e) {
-  return NextResponse.json(
-    {
-      score: 0,
-      missingSkills: [],
-      feedback: "Error parsing AI response",
-    },
-    { status: 500 }
-  )
-}
   return NextResponse.json(result)
+} catch (error: any) {
+    console.error("ANALYZE ERROR:", error)
+
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        message: error?.message ?? "unknown",
+      },
+      { status: 500 }
+    )
+  }
 }

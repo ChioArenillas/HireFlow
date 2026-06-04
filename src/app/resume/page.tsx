@@ -2,44 +2,56 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useJobs } from "@/features/jobs/hooks/useJobs";
 import { useAnalysisStore } from "@/store/useAnalysis";
+import { Upload } from "lucide-react";
 
 export default function ResumePage() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
   const { data: jobs } = useJobs();
   const job = jobs?.find((j) => String(j.id) === jobId);
+
   const [cv, setCv] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [showResult, setShowResult] = useState(false)
-  const { setAnalysis, getAnalysis} = useAnalysisStore()
-  const savedAnalysis = jobId ? getAnalysis(jobId) : null
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const { setAnalysis, getAnalysis } = useAnalysisStore();
+  const savedAnalysis = jobId ? getAnalysis(jobId) : null;
   const analysisToShow = showResult ? getAnalysis(jobId!) : savedAnalysis;
 
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   async function handleAnalyze() {
-    setIsAnalyzing(true)
+    if (!file) return;
+    setIsAnalyzing(true);
     try {
+      const formData = new FormData();
+
+      formData.append("file", file);
+      formData.append("jobDescription", job?.description ?? "");
       const response = await fetch("/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cv,
-          jobDescription: job?.description,
-        }),
+        body: formData,
       });
+
       const result = await response.json();
-      if(jobId){
-      setAnalysis(jobId, result)
+      if (jobId) {
+        setAnalysis(jobId, result);
       }
-      setShowResult(true)
+      setShowResult(true);
     } finally {
-      setIsAnalyzing(false)
+      setIsAnalyzing(false);
     }
   }
+
   const scoreColor = analysisToShow
     ? analysisToShow.score >= 80
       ? "bg-green-700"
@@ -48,6 +60,9 @@ export default function ResumePage() {
         : "bg-red-700"
     : "bg-gray-300";
 
+    if(!mounted){
+        return null
+    }
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-3xl">
@@ -64,15 +79,44 @@ export default function ResumePage() {
           <p className=" text-muted-foreground">Select a job to analyze</p>
         )}
 
-        <textarea
-          value={cv}
-          onChange={(e) => {
-            setCv(e.target.value)
-            setShowResult(false)}}
-          placeholder="Paste your CV here..."
-          className="w-full h-60 border rounded p-3"
-        />
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
 
+            const droppedFile = e.dataTransfer.files?.[0];
+            if (droppedFile) setFile(droppedFile);
+          }}
+          onClick={() => document.getElementById("cv-upload")?.click()}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+            isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+          }`}
+        >
+          <p className="font-medium">
+            {file ? file.name : "Drag & drop your CV here"}
+          </p>
+
+          <p className="text-sm text-muted-foreground mt-2">
+            or click to upload (PDF, DOCX)
+          </p>
+          <Upload className="mx-auto mb-2 text-gray-400" />
+
+          <input
+            id="cv-upload"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            className="hidden"
+            onChange={(e) => {
+              const selectedFile = e.target.files?.[0] ?? null;
+              setFile(selectedFile);
+            }}
+          />
+        </div>
         <button
           onClick={handleAnalyze}
           disabled={isAnalyzing}
@@ -99,7 +143,7 @@ export default function ResumePage() {
               <h3 className="font-medium  font-semibold">Missing Skills: </h3>
 
               <ul className="list-disc pl-5">
-                {analysisToShow.missingSkills.map((skill) => (
+                {analysisToShow.missingSkills?.map((skill) => (
                   <li key={skill}>{skill}</li>
                 ))}
               </ul>
