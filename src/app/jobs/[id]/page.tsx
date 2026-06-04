@@ -22,6 +22,8 @@ export default function JobDetailPage({
 
   if (isLoading) return <p>Loading...</p>;
 
+  if(!id) return <p>Loading job data...</p>
+
   const job = jobs?.find((j) => String(j.id) === id);
 
   if (!job) return <p>Job not found</p>;
