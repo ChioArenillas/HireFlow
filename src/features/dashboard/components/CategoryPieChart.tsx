@@ -16,7 +16,7 @@ const COLORS = [
 
 export function CategoryPieChart({ data}: Props){
     return (
-         <div className="w-full h-80 mt-10 mb-10">
+         <div className="w-full h-80 ">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
             <Pie

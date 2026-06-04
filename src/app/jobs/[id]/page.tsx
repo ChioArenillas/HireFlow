@@ -1,6 +1,6 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/Layout";
 import { JobDescription } from "@/features/jobs/components/JobDescription";
 import { useJobs } from "@/features/jobs/hooks/useJobs";
 import Link from "next/link";

@@ -8,7 +8,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <Navbar />
       <div className=" min-h-screen flex">
         <Sidebar />
-        <main className="flex-1 p-6 bg-muted/40">{children}</main>
+        <main className="flex-1 p-6 space-y-6 bg-muted/40">{children}</main>
       </div>
     </div>
   );

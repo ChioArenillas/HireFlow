@@ -6,10 +6,10 @@ export function SimpleBarChart({ data }: Props) {
   const max = Math.max(...data.map((d) => d.value));
 
   return (
-    <div className="space-y-6 mt-10 mb-10">
+    <div className="space-y-6">
       {data.map((item) => (
         <div key={item.name}>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="flex space-y-3 justify-between text-sm mb-1">
             <span>{item.name}</span>
             <span>{item.value}</span>
           </div>

@@ -1,10 +1,11 @@
 "use client";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/Layout";
 import { CategoryPieChart } from "@/features/dashboard/components/CategoryPieChart";
 import { CompanyBarChart } from "@/features/dashboard/components/CompanyBarChart";
 import { SimpleBarChart } from "@/features/dashboard/components/SimpleBarChart";
 import StatsCard from "@/features/dashboard/components/StatsCard";
 import { useSavedJobs } from "@/store/useSavedJobs";
+import { Bookmark, Building2, Layers, MapPin } from "lucide-react";
 
 export default function HomePage() {
   const savedJobs = useSavedJobs((state) => state.savedJobs)
@@ -58,13 +59,31 @@ export default function HomePage() {
       <div className="space-y-6">
         <h2 className="text-2xl font-bold">Dashboard</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Saved Jobs" value={totalSaved} />
-        <StatsCard title="Companies" value={companies} />
-        <StatsCard title="Categories" value={categories} />
-        <StatsCard title="Locations" value={locations} />
-      </div>
-      <SimpleBarChart data={chartData}/>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <StatsCard
+    title="Saved Jobs"
+    value={totalSaved}
+    icon={<Bookmark size={18} />}
+  />
+
+  <StatsCard
+    title="Companies"
+    value={companies}
+    icon={<Building2 size={18} />}
+  />
+
+  <StatsCard
+    title="Categories"
+    value={categories}
+    icon={<Layers size={18} />}
+  />
+
+  <StatsCard
+    title="Locations"
+    value={locations}
+    icon={<MapPin size={18} />}
+  />
+</div>      <SimpleBarChart data={chartData}/>
       <CategoryPieChart data={chartData}/>
       <CompanyBarChart data={companyData}/>
     </DashboardLayout>

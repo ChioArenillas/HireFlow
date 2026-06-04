@@ -28,9 +28,4 @@ export const navigation = [
     href: "/resume",
     icon: FileText,
   },
-  {
-    label: "Interview Coach",
-    href: "/interview",
-    icon: MessageSquare,
-  },
 ];

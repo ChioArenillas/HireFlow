@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/Layout";
 import SavedJobs from "@/features/jobs/components/SavedJobs";
 
 export default async function JobsPage() {
