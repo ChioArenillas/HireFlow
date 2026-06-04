@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/layout/Layout";
 import  JobsClient  from "@/features/jobs/components/JobsClient"
 
-export default function JobsPage() {
+export default async function JobsPage() {
 
     return (
       <DashboardLayout>
