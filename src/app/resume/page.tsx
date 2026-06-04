@@ -22,14 +22,21 @@ export default function ResumePage() {
 
   const { setAnalysis, getAnalysis } = useAnalysisStore()
 
-  const savedAnalysis = jobId ? getAnalysis(jobId) : null
-  const analysisToShow = showResult ? getAnalysis(jobId!) : savedAnalysis
-
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const savedAnalysis =
+    mounted && jobId ? getAnalysis(jobId) : null
+
+  const analysisToShow =
+    mounted
+      ? showResult
+        ? getAnalysis(jobId!)
+        : savedAnalysis
+      : null
 
   async function handleAnalyze() {
     if (!file || !job?.description) return
@@ -55,10 +62,6 @@ export default function ResumePage() {
       }
 
       const result = JSON.parse(text)
-      if (!response.ok) {
-        console.error("API error:", result)
-        return
-      }
 
       if (jobId) {
         setAnalysis(jobId, result)
@@ -69,7 +72,6 @@ export default function ResumePage() {
       setIsAnalyzing(false)
     }
   }
-
 
   const scoreColor = analysisToShow
     ? analysisToShow.score >= 80
@@ -95,7 +97,6 @@ export default function ResumePage() {
           <p className="text-muted-foreground">Select a job to analyze</p>
         )}
 
-        {/* UPLOAD */}
         <div
           onDragOver={(e) => {
             e.preventDefault()
@@ -150,6 +151,7 @@ export default function ResumePage() {
             <span>Analyzing CV with AI...</span>
           </div>
         )}
+
         {analysisToShow && (
           <div className="rounded-lg border p-6 space-y-4">
             <h2 className="text-xl font-semibold">
