@@ -10,75 +10,93 @@ import { Upload } from "lucide-react";
 export default function ResumePage() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
+
   const { data: jobs } = useJobs();
   const job = jobs?.find((j) => String(j.id) === jobId);
-
-  const [cv, setCv] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  const { setAnalysis, getAnalysis } = useAnalysisStore();
-  const savedAnalysis = jobId ? getAnalysis(jobId) : null;
-  const analysisToShow = showResult ? getAnalysis(jobId!) : savedAnalysis;
 
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const [mounted, setMounted] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+
+  const { setAnalysis, getAnalysis } = useAnalysisStore();
+
+  const savedAnalysis = jobId ? getAnalysis(jobId) : null;
+  const analysisToShow = showResult ? getAnalysis(jobId!) : savedAnalysis;
+
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   async function handleAnalyze() {
-    if (!file) return;
+    if (!file || !job?.description) return;
+
     setIsAnalyzing(true);
+
     try {
       const formData = new FormData();
 
       formData.append("file", file);
-      formData.append("jobDescription", job?.description ?? "");
+      formData.append("jobDescription", job.description);
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         body: formData,
       });
 
-      const result = await response.json();
+const text = await response.text();
+
+if (!response.ok) {
+  console.error("API ERROR RAW:", text);
+  return;
+}
+
+const result = JSON.parse(text);
+      if (!response.ok) {
+        console.error("API error:", result);
+        return;
+      }
+
       if (jobId) {
         setAnalysis(jobId, result);
       }
+
       setShowResult(true);
     } finally {
       setIsAnalyzing(false);
     }
   }
 
+  if (!mounted) return null;
+
   const scoreColor = analysisToShow
     ? analysisToShow.score >= 80
       ? "bg-green-700"
       : analysisToShow.score >= 50
-        ? "bg-yellow-500"
-        : "bg-red-700"
+      ? "bg-yellow-500"
+      : "bg-red-700"
     : "bg-gray-300";
 
-    if(!mounted){
-        return null
-    }
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-3xl">
         <h1 className="text-2xl font-bold">Resume Analyzer</h1>
 
         {job ? (
-          <p className=" text-muted-foreground">
+          <p className="text-muted-foreground">
             Analyzing:{" "}
             <span className="text-lg font-bold text-foreground">
               {job.title}
             </span>
           </p>
         ) : (
-          <p className=" text-muted-foreground">Select a job to analyze</p>
+          <p className="text-muted-foreground">Select a job to analyze</p>
         )}
 
+        {/* UPLOAD */}
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -97,6 +115,8 @@ export default function ResumePage() {
             isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
           }`}
         >
+          <Upload className="mx-auto mb-2 text-gray-400" />
+
           <p className="font-medium">
             {file ? file.name : "Drag & drop your CV here"}
           </p>
@@ -104,7 +124,6 @@ export default function ResumePage() {
           <p className="text-sm text-muted-foreground mt-2">
             or click to upload (PDF, DOCX)
           </p>
-          <Upload className="mx-auto mb-2 text-gray-400" />
 
           <input
             id="cv-upload"
@@ -117,20 +136,28 @@ export default function ResumePage() {
             }}
           />
         </div>
+
+        {/* BUTTON */}
         <button
           onClick={handleAnalyze}
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || !job || !file}
           className="px-4 py-2 border rounded hover:bg-muted transition disabled:opacity-50"
         >
           {isAnalyzing ? "Analyzing..." : "Analyze CV"}
         </button>
+
+        {isAnalyzing && (
+          <p className="text-sm text-muted-foreground">
+            Analyzing CV with AI...
+          </p>
+        )}
+
+        {/* RESULT */}
         {analysisToShow && (
           <div className="rounded-lg border p-6 space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold">
-                Match Score: {analysisToShow.score}%
-              </h2>
-            </div>
+            <h2 className="text-xl font-semibold">
+              Match Score: {analysisToShow.score}%
+            </h2>
 
             <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -140,17 +167,16 @@ export default function ResumePage() {
             </div>
 
             <div>
-              <h3 className="font-medium  font-semibold">Missing Skills: </h3>
-
+              <h3 className="font-semibold">Missing Skills:</h3>
               <ul className="list-disc pl-5">
-                {analysisToShow.missingSkills?.map((skill) => (
+                {analysisToShow.missingSkills?.map((skill: string) => (
                   <li key={skill}>{skill}</li>
                 ))}
               </ul>
             </div>
-            <div>
-              <h3 className="font-medium font-semibold">Feedback: </h3>
 
+            <div>
+              <h3 className="font-semibold">Feedback:</h3>
               <p>{analysisToShow.feedback}</p>
             </div>
           </div>
