@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface Analysis {
   score: number;
@@ -12,7 +12,6 @@ interface AnalysisStore {
   setAnalysis: (jobId: string, data: Analysis) => void;
   getAnalysis: (jobId: string) => Analysis | null;
 }
-
 
 export const useAnalysisStore = create<AnalysisStore>()(
   persist(
@@ -31,6 +30,10 @@ export const useAnalysisStore = create<AnalysisStore>()(
         return get().analyses[jobId] || null;
       },
     }),
-    { name: "job-analysis" }
+    {
+      name: "job-analysis",
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+    }
   )
 );
