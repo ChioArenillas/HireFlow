@@ -1,7 +1,11 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 export default function ResumePage() {
-  return <div>Resume page</div>;
+  const searchParams = useSearchParams();
+const jobId = searchParams.get("jobId");
+  return <div>{jobId}</div>;
 }// "use client"
 
 // import { DashboardLayout } from "@/components/layout/Layout"
