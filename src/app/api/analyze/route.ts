@@ -39,14 +39,9 @@ export async function POST(
       buildAnalysisPrompt(cv, jobDescription)
 
 console.log("CV length:", cv.length)
-console.log(
-  "Job description length:",
-  jobDescription.length
-)
-console.log(
-  "Prompt length:",
-  prompt.length
-)
+console.log("Job description length:", jobDescription.length)
+console.log("Prompt length:",prompt.length)
+
     const raw =
       await analyzeResume(prompt)
 
