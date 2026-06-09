@@ -83,7 +83,8 @@ export default function HomePage() {
     value={locations}
     icon={<MapPin size={18} />}
   />
-</div>      <SimpleBarChart data={chartData}/>
+</div>      
+      <SimpleBarChart data={chartData}/>
       <CategoryPieChart data={chartData}/>
       <CompanyBarChart data={companyData}/>
     </DashboardLayout>

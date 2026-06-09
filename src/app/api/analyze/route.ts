@@ -1,95 +1,73 @@
 export const runtime = "nodejs"
 
 import { NextResponse } from "next/server"
-import Groq from "groq-sdk"
-import mammoth from "mammoth"
-import pdfParse from "pdf-parse"
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
-})
+import { extractResumeText } from "@/features/resume/services/extractResumeText"
+import { buildAnalysisPrompt } from "@/features/resume/services/buildAnalysisPrompt"
+import { analyzeResume } from "@/features/resume/services/analyzeResume"
+import { parseAnalysisResponse } from "@/features/resume/services/parseAnalysisResponse"
+import { validateResumeFile } from "@/features/resume/services/validateResumeFile"
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+) {
   try {
-    const formData = await request.formData()
+    const formData =
+      await request.formData()
 
-    const file = formData.get("file") as File | null
-    const jobDescription = formData.get("jobDescription") as string
+    const file =
+      formData.get("file") as File
+
+    const jobDescription =
+      formData.get(
+        "jobDescription"
+      ) as string
 
     if (!file) {
-      return NextResponse.json({ error: "No file" }, { status: 400 })
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer())
-
-    let cv = ""
-
-    const fileName = file.name.toLowerCase()
-
-    if (fileName.endsWith(".pdf")) {
-      const data = await pdfParse(buffer)
-      cv = data.text || ""
-    } else if (fileName.endsWith(".docx")) {
-      const data = await mammoth.extractRawText({ buffer })
-      cv = data.value
-    } else {
-      cv = await file.text()
-    }
-
-    // 🔥 recorte para evitar prompts enormes
-    const cvTrimmed = cv.slice(0, 12000)
-
-    const prompt = `
-You are a strict ATS resume analyzer.
-
-Return ONLY valid JSON.
-
-Schema:
-{
-  "score": number (0-100),
-  "missingSkills": string[],
-  "feedback": string
-}
-
-Rules:
-- Only JSON
-- No markdown
-- No explanations
-
-Job Description:
-${jobDescription}
-
-CV:
-${cvTrimmed}
-`
-
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.3,
-    })
-
-    const content = completion.choices[0]?.message?.content || ""
-
-    // 🧠 parse seguro
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
       return NextResponse.json(
-        { error: "Invalid JSON from model", raw: content },
-        { status: 500 }
+        { error: "No file" },
+        { status: 400 }
       )
     }
 
-    const result = JSON.parse(jsonMatch[0])
+    validateResumeFile(file)
 
+    const cv =
+      await extractResumeText(file)
+
+    const prompt =
+      buildAnalysisPrompt(cv, jobDescription)
+
+console.log("CV length:", cv.length)
+console.log(
+  "Job description length:",
+  jobDescription.length
+)
+console.log(
+  "Prompt length:",
+  prompt.length
+)
+    const raw =
+      await analyzeResume(prompt)
+
+    const result =
+      parseAnalysisResponse(raw)
     return NextResponse.json(result)
   } catch (error: any) {
     console.error("ANALYZE ERROR:", error)
+
+    if (
+      error?.message?.includes("Request too large") ||
+      error?.message?.includes("rate_limit_exceeded")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Resume or job description is too large for analysis",
+        },
+        { status: 413 }
+      )
+    }
 
     return NextResponse.json(
       {
